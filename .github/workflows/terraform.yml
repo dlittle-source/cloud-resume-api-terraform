@@ -32,9 +32,8 @@ jobs:
       # 4️⃣ Zip Lambda function
       - name: Zip Lambda code
         run: |
-          cd $LAMBDA_DIR
+          cd lambda
           zip -r ../lambda.zip .
-          cd ..
 
       # 5️⃣ Setup Terraform
       - name: Setup Terraform
