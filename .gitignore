@@ -1,0 +1,83 @@
+######################################## 
+# Terraform
+########################################
+
+# Local .terraform directories
+.terraform/
+**/.terraform/*
+
+# Terraform state files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Terraform plan files
+*.tfplan
+*.plan
+
+# Sensitive variable files
+*.tfvars
+*.tfvars.json
+
+# CLI configuration files
+.terraformrc
+terraform.rc
+
+########################################
+# Terraform Override Files
+########################################
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+########################################
+# Terraform Lock File (KEEP THIS)
+########################################
+# terraform.lock.hcl   <-- DO NOT IGNORE
+
+########################################
+# Logs
+########################################
+*.log
+
+########################################
+# Environment Variables / Secrets
+########################################
+.env
+.env.*
+*.pem
+*.key
+
+########################################
+# OS / Editor Files
+########################################
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+########################################
+# Node / Python (CI/CD helpers)
+########################################
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+########################################
+# Build / Artifacts
+########################################
+dist/
+build/
+coverage/
+
+########################################
+# AWS / Cloud
+########################################
+.aws/

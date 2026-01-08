@@ -1,0 +1,104 @@
+{
+  "resumes": [
+    {
+      "PutRequest": {
+        "Item": {
+          "id": { "S": "1" },
+          "name": { "S": "John Smith" },
+          "title": { "S": "DevOps Engineer" },
+          "skills": { "S": "AWS, Docker, Kubernetes" }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": { "S": "2" },
+          "name": { "S": "Sarah Johnson" },
+          "title": { "S": "Backend Developer" },
+          "skills": { "S": "Node.js, PostgreSQL, AWS" }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": { "S": "3" },
+          "name": { "S": "Michael Brown" },
+          "title": { "S": "Site Reliability Engineer" },
+          "skills": { "S": "Linux, Terraform, AWS" }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": { "S": "4" },
+          "name": { "S": "Emily Davis" },
+          "title": { "S": "Cloud Architect" },
+          "skills": { "S": "AWS, Azure, GCP" }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": { "S": "5" },
+          "name": { "S": "David Wilson" },
+          "title": { "S": "Full Stack Engineer" },
+          "skills": { "S": "React, Node.js, AWS" }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": { "S": "6" },
+          "name": { "S": "Jessica Martinez" },
+          "title": { "S": "Platform Engineer" },
+          "skills": { "S": "Kubernetes, AWS, Python" }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": { "S": "7" },
+          "name": { "S": "Chris Anderson" },
+          "title": { "S": "Security Engineer" },
+          "skills": { "S": "IAM, Security Hub, AWS" }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": { "S": "8" },
+          "name": { "S": "Amanda Lee" },
+          "title": { "S": "Data Engineer" },
+          "skills": { "S": "Python, Glue, Redshift" }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": { "S": "9" },
+          "name": { "S": "Brian Taylor" },
+          "title": { "S": "Solutions Architect" },
+          "skills": { "S": "AWS, APIs, Microservices" }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": { "S": "10" },
+          "name": { "S": "Olivia Harris" },
+          "title": { "S": "AI Engineer" },
+          "skills": { "S": "Python, Bedrock, AWS" }
+        }
+      }
+    }
+  ]
+}
