@@ -8,39 +8,78 @@ on:
 
 jobs:
   terraform:
-    name: Terraform Plan & Apply
+    name: Terraform Plan & Apply + Test
     runs-on: ubuntu-latest
     env:
       AWS_REGION: us-east-1
+      LAMBDA_DIR: lambda
 
     steps:
       # 1️⃣ Checkout repo
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2️⃣ Setup Terraform
+      # 2️⃣ Setup Python (for Lambda zip)
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.14
+
+      # 3️⃣ Install zip utility (Ubuntu)
+      - name: Install zip
+        run: sudo apt-get install -y zip
+
+      # 4️⃣ Zip Lambda function
+      - name: Zip Lambda code
+        run: |
+          cd $LAMBDA_DIR
+          zip -r ../lambda.zip .
+          cd ..
+
+      # 5️⃣ Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.6.0
+          terraform_version: 1.14.2
 
-      # 3️⃣ Configure AWS credentials
+      # 6️⃣ Configure AWS credentials
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # 4️⃣ Initialize Terraform (with remote backend)
+      # 7️⃣ Initialize Terraform
       - name: Terraform Init
         run: terraform init
 
-      # 5️⃣ Terraform Plan
+      # 8️⃣ Terraform Plan
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
-      # 6️⃣ Terraform Apply (on main branch only)
+      # 9️⃣ Terraform Apply (main branch only)
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve tfplan
+
+      # 🔟 Wait for resources to stabilize
+      - name: Wait for resources
+        if: github.ref == 'refs/heads/main'
+        run: sleep 10
+
+      # 1️⃣1️⃣ Test the API
+      - name: Test Resume API
+        if: github.ref == 'refs/heads/main'
+        run: |
+          API_URL=$(terraform output -raw api_url)
+          RESPONSE=$(curl -s -w "%{http_code}" -o response.json "$API_URL/101")
+          HTTP_CODE=$(tail -n1 <<< "$RESPONSE")
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "API test failed with status $HTTP_CODE"
+            cat response.json
+            exit 1
+          fi
+          echo "API test passed!"
+          cat response.json
+
