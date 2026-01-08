@@ -1,5 +1,5 @@
 # configure aws provider
 provider "aws" {
-  region = "us-east-1"
-  profile = "default"
+  region = var.region
+  profile = "admin"
 }
