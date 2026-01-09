@@ -1,23 +1,23 @@
-name: Terraform CI/CD
+name: Terraform Multi-Environment CI/CD
 
 on:
-  workflow_dispatch:
   push:
     branches:
-      - main
+      - main      # Production
+      - develop   # Staging
   pull_request:
 
 jobs:
   terraform:
-    name: Terraform Plan & Apply + Test 
+    name: Terraform Deploy
     runs-on: ubuntu-latest
     env:
       AWS_REGION: us-east-1
       LAMBDA_DIR: lambda
 
     steps:
-      # 1️⃣ Checkout repo
-      - name: Checkout code
+      # 1️⃣ Checkout code
+      - name: Checkout
         uses: actions/checkout@v3
 
       # 2️⃣ Setup Python (for Lambda zip)
@@ -26,15 +26,16 @@ jobs:
         with:
           python-version: 3.14
 
-      # 3️⃣ Install zip utility (Ubuntu)
+      # 3️⃣ Install zip utility
       - name: Install zip
         run: sudo apt-get install -y zip
 
-      # 4️⃣ Zip Lambda function
+      # 4️⃣ Zip Lambda
       - name: Zip Lambda code
         run: |
-          cd lambda
+          cd $LAMBDA_DIR
           zip -r ../lambda.zip .
+          cd ..
 
       # 5️⃣ Setup Terraform
       - name: Setup Terraform
@@ -42,7 +43,7 @@ jobs:
         with:
           terraform_version: 1.14.2
 
-      # 6️⃣ Configure AWS credentials
+      # 6️⃣ Configure AWS Credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -50,29 +51,43 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-            # 7️⃣ Initialize Terraform
-      - name: Terraform Init
-        run: terraform init
+      # 7️⃣ Select Environment
+      - name: Set Environment Variables
+        run: |
+          if [ "${GITHUB_REF##*/}" == "main" ]; then
+            echo "ENV=production" >> $GITHUB_ENV
+            echo "STATE_KEY=production/terraform.tfstate" >> $GITHUB_ENV
+          else
+            echo "ENV=staging" >> $GITHUB_ENV
+            echo "STATE_KEY=staging/terraform.tfstate" >> $GITHUB_ENV
+          fi
 
-      # 8️⃣ Terraform Plan
+      # 8️⃣ Initialize Terraform with backend
+      - name: Terraform Init
+        run: terraform init \
+          -backend-config="bucket=cloud-resume-terraform-state" \
+          -backend-config="key=$STATE_KEY" \
+          -backend-config="region=us-east-1" \
+          -backend-config="dynamodb_table=terraform-locks" \
+          -backend-config="encrypt=true"
+
+      # 9️⃣ Terraform Plan
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
-      # 9️⃣ Terraform Apply (main branch only)
+      # 🔟 Terraform Apply (main or develop)
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve tfplan
 
-      # 🔟 Wait for resources to stabilize
-      - name: Wait for resources
-        if: github.ref == 'refs/heads/main'
+      # 1️⃣1️⃣ Wait for resources to stabilize
+      - name: Wait for Resources
         run: sleep 10
 
-      # 1️⃣1️⃣ Test the API
+      # 1️⃣2️⃣ Test the API
       - name: Test Resume API
-        if: github.ref == 'refs/heads/main'
         run: |
           API_URL=$(terraform output -raw api_url)
+          echo "Testing $ENV environment at $API_URL"
           RESPONSE=$(curl -s -w "%{http_code}" -o response.json "$API_URL/101")
           HTTP_CODE=$(tail -n1 <<< "$RESPONSE")
           if [ "$HTTP_CODE" != "200" ]; then
