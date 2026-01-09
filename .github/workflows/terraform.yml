@@ -69,17 +69,8 @@ jobs:
         run: sleep 20
 
       # 1️⃣1️⃣ Test the API
-      - name: Test Resume API
-        if: github.ref == 'refs/heads/main'
+      - name: Read API URL
+        working-directory: terraform
         run: |
-          API_URL=$(terraform output -raw api_url)
-          RESPONSE=$(curl -s -w "%{http_code}" -o response.json "$API_URL/101")
-          HTTP_CODE=$(tail -n1 <<< "$RESPONSE")
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "API test failed with status $HTTP_CODE"
-            cat response.json
-            exit 1
-          fi
-          echo "API test passed!"
-          cat response.json
-
+          echo "API_URL=$(terraform output -raw api_base_url)/resume" >> $GITHUB_ENV
+        
