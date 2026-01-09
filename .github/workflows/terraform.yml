@@ -50,30 +50,35 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # 7️⃣ Initialize Terraform
+            # 7️⃣ Initialize Terraform
       - name: Terraform Init
-        working-directory: cloud-resume-api-terraform
         run: terraform init
 
       # 8️⃣ Terraform Plan
       - name: Terraform Plan
-        working-directory: cloud-resume-api-terraform
         run: terraform plan -out=tfplan
 
       # 9️⃣ Terraform Apply (main branch only)
       - name: Terraform Apply
-        working-directory: cloud-resume-api-terraform
-        run: terraform apply -auto-approve tfplan 
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve tfplan
 
       # 🔟 Wait for resources to stabilize
       - name: Wait for resources
         if: github.ref == 'refs/heads/main'
         run: sleep 10
 
-      - name: Export API_URL
-        working-directory: cloud-resume-api-terraform
-        run: echo "API_URL=$(terraform output -raw api_url)" >> $GITHUB_ENV
-
-      - name: Test API
+      # 1️⃣1️⃣ Test the API
+      - name: Test Resume API
+        if: github.ref == 'refs/heads/main'
         run: |
-          curl -s "$API_URL/101"
+          API_URL=$(terraform output -raw api_url)
+          RESPONSE=$(curl -s -w "%{http_code}" -o response.json "$API_URL/101")
+          HTTP_CODE=$(tail -n1 <<< "$RESPONSE")
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "API test failed with status $HTTP_CODE"
+            cat response.json
+            exit 1
+          fi
+          echo "API test passed!"
+          cat response.json
