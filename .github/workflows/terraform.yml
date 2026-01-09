@@ -52,16 +52,17 @@ jobs:
 
       # 7️⃣ Initialize Terraform
       - name: Terraform Init
-        working-directory: terraform
+        working-directory: cloud-resume-api-terraform
         run: terraform init
 
       # 8️⃣ Terraform Plan
       - name: Terraform Plan
+        working-directory: cloud-resume-api-terraform
         run: terraform plan -out=tfplan
 
       # 9️⃣ Terraform Apply (main branch only)
       - name: Terraform Apply
-        working-directory: terraform
+        working-directory: cloud-resume-api-terraform
         run: terraform apply -auto-approve tfplan 
 
       # 🔟 Wait for resources to stabilize
@@ -70,8 +71,8 @@ jobs:
         run: sleep 10
 
       - name: Export API_URL
-        run: |
-          echo "API_URL=$(terraform output -raw api_url)" >> $GITHUB_ENV
+        working-directory: cloud-resume-api-terraform
+        run: echo "API_URL=$(terraform output -raw api_url)" >> $GITHUB_ENV
 
       - name: Test API
         run: |
