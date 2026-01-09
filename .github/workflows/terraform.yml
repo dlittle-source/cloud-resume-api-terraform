@@ -52,16 +52,23 @@ jobs:
 
       # 7️⃣ Initialize Terraform
       - name: Terraform Init
+        working-directory: terraform
         run: terraform init
 
       # 8️⃣ Terraform Plan
       - name: Terraform Plan
+        working-directory: terraform
         run: terraform plan -out=tfplan
 
       # 9️⃣ Terraform Apply (main branch only)
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'
-        run: terraform apply -auto-approve tfplan
+        working-directory: terraform
+        run: terraform apply -auto-approve 
+        
+      # Debug Terraform Outputs
+      - name: Debug Terraform Outputs
+        working-directory: terraform
+        run: terraform output
 
       # 🔟 Wait for resources to stabilize
       - name: Wait for resources
