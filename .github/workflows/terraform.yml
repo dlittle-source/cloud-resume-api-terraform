@@ -66,7 +66,7 @@ jobs:
       # 🔟 Wait for resources to stabilize
       - name: Wait for resources
         if: github.ref == 'refs/heads/main'
-        run: sleep 10
+        run: sleep 20
 
       # 1️⃣1️⃣ Test the API
       - name: Test Resume API
