@@ -1,0 +1,61 @@
+name: Destroy Terraform Multi-Environment CI/CD
+
+on:
+  workflow_dispatch:   # manual trigger ONLY
+
+jobs:
+  terraform-destroy:
+    name: Terraform Destroy
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: us-east-1
+
+    steps:
+      # 1️⃣ Checkout code
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # 2️⃣ Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.14.2
+
+      # 3️⃣ Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 4️⃣ Select Environment (staging / production)
+      - name: Set Environment Variables
+        run: |
+          if [ "${GITHUB_REF##*/}" == "main" ]; then
+            echo "ENV=production" >> $GITHUB_ENV
+            echo "STATE_KEY=production/terraform.tfstate" >> $GITHUB_ENV
+          else
+            echo "ENV=staging" >> $GITHUB_ENV
+            echo "STATE_KEY=staging/terraform.tfstate" >> $GITHUB_ENV
+          fi
+
+      # 5️⃣ Terraform Init (remote backend)
+      - name: Terraform Init
+        working-directory: terraform
+        run: |
+          terraform init \
+            -backend-config="bucket=dlittle-cloud-resume-terraform-state" \
+            -backend-config="key=$STATE_KEY" \
+            -backend-config="region=us-east-1" \
+            -backend-config="dynamodb_table=terraform-locks" \
+            -backend-config="encrypt=true"
+
+      # 6️⃣ Terraform Destroy
+      - name: Terraform Destroy
+        working-directory: terraform
+        run: |
+          echo "Destroying $ENV environment..."
+          terraform destroy -auto-approve
+
