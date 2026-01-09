@@ -1,6 +1,7 @@
 name: Terraform CI/CD
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -8,7 +9,7 @@ on:
 
 jobs:
   terraform:
-    name: Terraform Plan & Apply + Test
+    name: Terraform Plan & Apply + Test 
     runs-on: ubuntu-latest
     env:
       AWS_REGION: us-east-1
