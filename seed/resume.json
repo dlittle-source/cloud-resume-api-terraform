@@ -1,0 +1,62 @@
+[
+  {
+    "id": "1",
+    "name": "John Smith",
+    "title": "DevOps Engineer",
+    "skills": "AWS, Docker, Kubernetes"
+  },
+  {
+    "id": "2",
+    "name": "Sarah Johnson",
+    "title": "Backend Developer",
+    "skills": "Node.js, PostgreSQL, AWS"
+  },
+  {
+    "id": "3",
+    "name": "Michael Brown",
+    "title": "Site Reliability Engineer",
+    "skills": "Linux, Terraform, AWS"
+  },
+  {
+    "id": "4",
+    "name": "Emily Davis",
+    "title": "Cloud Architect",
+    "skills": "AWS, Azure, GCP"
+  },
+  {
+    "id": "5",
+    "name": "David Wilson",
+    "title": "Full Stack Engineer",
+    "skills": "React, Node.js, AWS"
+  },
+  {
+    "id": "6",
+    "name": "Jessica Martinez",
+    "title": "Platform Engineer",
+    "skills": "Kubernetes, AWS, Python"
+  },
+  {
+    "id": "7",
+    "name": "Chris Anderson",
+    "title": "Security Engineer",
+    "skills": "IAM, Security Hub, AWS"
+  },
+  {
+    "id": "8",
+    "name": "Amanda Lee",
+    "title": "Data Engineer",
+    "skills": "Python, Glue, Redshift"
+  },
+  {
+    "id": "9",
+    "name": "Brian Taylor",
+    "title": "Solutions Architect",
+    "skills": "AWS, APIs, Microservices"
+  },
+  {
+    "id": "10",
+    "name": "Olivia Harris",
+    "title": "AI Engineer",
+    "skills": "Python, Bedrock, AWS"
+  }
+]

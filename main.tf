@@ -111,3 +111,23 @@ resource "aws_api_gateway_stage" "prod" {
   rest_api_id   = aws_api_gateway_rest_api.api.id
   deployment_id = aws_api_gateway_deployment.deployment.id
 }
+
+# Read JSON file
+locals {
+  resumes = jsondecode(file("${path.module}/seed/resume.json"))
+}
+
+# Create DynamoDB items
+resource "aws_dynamodb_table_item" "resume_items" {
+  for_each   = { for r in local.resumes : r.id => r }
+  table_name = aws_dynamodb_table.resumes.name
+  hash_key   = "id"
+
+  item = jsonencode({
+    id     = { S = each.value.id }
+    name   = { S = each.value.name }
+    title  = { S = each.value.title }
+    skills = { S = each.value.skills }
+  })
+}
+
