@@ -66,7 +66,7 @@ jobs:
       - name: Terraform Init
         run: | 
           terraform init \
-          -backend-config="bucket=cloud-resume-terraform-state" \
+          -backend-config="bucket=dlittle-cloud-resume-terraform-state" \
           -backend-config="key=$STATE_KEY" \
           -backend-config="region=us-east-1" \
           -backend-config="dynamodb_table=terraform-locks" \
