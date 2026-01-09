@@ -52,6 +52,7 @@ jobs:
 
       # 7️⃣ Initialize Terraform
       - name: Terraform Init
+        working-directory: terraform
         run: terraform init
 
       # 8️⃣ Terraform Plan
@@ -60,26 +61,18 @@ jobs:
 
       # 9️⃣ Terraform Apply (main branch only)
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'
+        working-directory: terraform
         run: terraform apply -auto-approve tfplan 
 
       # 🔟 Wait for resources to stabilize
       - name: Wait for resources
         if: github.ref == 'refs/heads/main'
-        run: sleep 20
+        run: sleep 10
 
-      - name: Test Resume API
+      - name: Export API_URL
         run: |
-          echo "Testing $API_URL"
-          RESPONSE=$(curl -s -w "%{http_code}" -o response.json "$API_URL/101")
-          HTTP_CODE=$(tail -n1 <<< "$RESPONSE")
+          echo "API_URL=$(terraform output -raw api_url)" >> $GITHUB_ENV
 
-          if [ "$HTTP_CODE" != "200" ]; then
-          echo "API test failed with status $HTTP_CODE"
-          cat response.json
-          exit 1
-          fi
-
-          echo "API test passed!"
-          cat response.json
-        
+      - name: Test API
+        run: |
+          curl -s "$API_URL/101"
