@@ -43,7 +43,6 @@ jobs:
 
       # 5️⃣ Terraform Init (remote backend)
       - name: Terraform Init
-        working-directory: terraform
         run: |
           terraform init \
             -backend-config="bucket=dlittle-cloud-resume-terraform-state" \
@@ -54,7 +53,6 @@ jobs:
 
       # 6️⃣ Terraform Destroy
       - name: Terraform Destroy
-        working-directory: terraform
         run: |
           echo "Destroying $ENV environment..."
           terraform destroy -auto-approve
