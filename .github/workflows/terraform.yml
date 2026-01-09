@@ -64,11 +64,6 @@ jobs:
       - name: Terraform Apply
         working-directory: terraform
         run: terraform apply -auto-approve 
-        
-      # Debug Terraform Outputs
-      - name: Debug Terraform Outputs
-        working-directory: terraform
-        run: terraform output
 
       # 🔟 Wait for resources to stabilize
       - name: Wait for resources
