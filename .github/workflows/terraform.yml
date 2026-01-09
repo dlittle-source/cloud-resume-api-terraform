@@ -64,7 +64,8 @@ jobs:
 
       # 8️⃣ Initialize Terraform with backend
       - name: Terraform Init
-        run: terraform init \
+        run: | 
+          terraform init \
           -backend-config="bucket=cloud-resume-terraform-state" \
           -backend-config="key=$STATE_KEY" \
           -backend-config="region=us-east-1" \
