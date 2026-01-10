@@ -18,3 +18,5 @@
   
 5. **GitHub Actions:**
    - CI/CD workflow to automate and streamline Terraform deployments to AWS.
+
+   **Conclusion:** Deployed a serverless API on AWS using Terraform and GitHub Actions CI/CD.
