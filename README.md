@@ -7,16 +7,19 @@
 1. **AWS Lambda:**
    - Serverless compute service that runs code without provisioning or managing servers.   
 
-2. **API Gateway:**
+2. **AWS API Gateway:**
    - Fully managed service for creating, deploying, and managing APIs, serving as the “front door” to backend applications.
 
-3. **DynamoDB:**
+3. **AWS DynamoDB:**
    - Fully managed NoSQL database providing fast, predictable performance at any scale, used for storing Terraform state locks
 
 4. **AWS S3:**
    - Object storage service used to store Terraform state files with versioning enabled.
   
-5. **GitHub Actions:**
+5. **AWS CloudWatch:**
+   - AWS CloudWatch is used for real-time application monitoring and log tracking to support troubleshooting and operational visibility.
+  
+6. **GitHub Actions:**
    - CI/CD workflow to automate and streamline Terraform deployments to AWS.
 
    **Conclusion:** Deployed a serverless API on AWS using Terraform and GitHub Actions CI/CD.
