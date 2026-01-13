@@ -25,7 +25,8 @@ jobs:
           aws-region: us-east-1
 
       - name: Terraform Init
-        run: terraform init \
+        run: |
+          terraform init \
           -backend-config="bucket=cloud-resume-terraform-state" \
           -backend-config="key=${{ github.event.inputs.environment }}/terraform.tfstate" \
           -backend-config="region=us-east-1" \
