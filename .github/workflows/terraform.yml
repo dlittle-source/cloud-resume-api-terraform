@@ -1,100 +1,100 @@
-# name: Terraform Multi-Environment CI/CD
+name: Terraform Multi-Environment CI/CD
 
-# on:
-#   push:
-#     branches:
-#       - main      # Production
-#       - develop   # Staging
-#   pull_request:
+on:
+  push:
+    branches:
+      - main      # Production
+      - develop   # Staging
+  pull_request:
 
-# jobs:
-#   terraform:
-#     name: Terraform Deploy
-#     runs-on: ubuntu-latest
-#     env:
-#       AWS_REGION: us-east-1
-#       LAMBDA_DIR: lambda
+jobs:
+  terraform:
+    name: Terraform Deploy
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-1
+      LAMBDA_DIR: lambda
 
-#     steps:
-#       # 1️⃣ Checkout code
-#       - name: Checkout
-#         uses: actions/checkout@v3
+    steps:
+      # 1️⃣ Checkout code
+      - name: Checkout
+        uses: actions/checkout@v3
 
-#       # 2️⃣ Setup Python (for Lambda zip)
-#       - name: Setup Python
-#         uses: actions/setup-python@v4
-#         with:
-#           python-version: 3.14
+      # 2️⃣ Setup Python (for Lambda zip)
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.14
 
-#       # 3️⃣ Install zip utility
-#       - name: Install zip
-#         run: sudo apt-get install -y zip
+      # 3️⃣ Install zip utility
+      - name: Install zip
+        run: sudo apt-get install -y zip
 
-#       # 4️⃣ Zip Lambda
-#       - name: Zip Lambda code
-#         run: |
-#           cd $LAMBDA_DIR
-#           zip -r ../lambda.zip .
-#           cd ..
+      # 4️⃣ Zip Lambda
+      - name: Zip Lambda code
+        run: |
+          cd $LAMBDA_DIR
+          zip -r ../lambda.zip .
+          cd ..
 
-#       # 5️⃣ Setup Terraform
-#       - name: Setup Terraform
-#         uses: hashicorp/setup-terraform@v2
-#         with:
-#           terraform_version: 1.14.2
+      # 5️⃣ Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.14.2
 
-#       # 6️⃣ Configure AWS Credentials
-#       - name: Configure AWS Credentials
-#         uses: aws-actions/configure-aws-credentials@v2
-#         with:
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#           aws-region: ${{ env.AWS_REGION }}
+      # 6️⃣ Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-#       # 7️⃣ Select Environment
-#       - name: Set Environment Variables
-#         run: |
-#           if [ "${GITHUB_REF##*/}" == "main" ]; then
-#             echo "ENV=production" >> $GITHUB_ENV
-#             echo "STATE_KEY=production/terraform.tfstate" >> $GITHUB_ENV
-#           else
-#             echo "ENV=staging" >> $GITHUB_ENV
-#             echo "STATE_KEY=staging/terraform.tfstate" >> $GITHUB_ENV
-#           fi
+      # 7️⃣ Select Environment
+      - name: Set Environment Variables
+        run: |
+          if [ "${GITHUB_REF##*/}" == "main" ]; then
+            echo "ENV=production" >> $GITHUB_ENV
+            echo "STATE_KEY=production/terraform.tfstate" >> $GITHUB_ENV
+          else
+            echo "ENV=staging" >> $GITHUB_ENV
+            echo "STATE_KEY=staging/terraform.tfstate" >> $GITHUB_ENV
+          fi
 
-#       # 8️⃣ Initialize Terraform with backend
-#       - name: Terraform Init
-#         run: | 
-#           terraform init \
-#           -backend-config="bucket=dlittle-cloud-resume-terraform-state" \
-#           -backend-config="key=$STATE_KEY" \
-#           -backend-config="region=us-east-1" \
-#           -backend-config="dynamodb_table=terraform-locks" \
-#           -backend-config="encrypt=true"
+      # 8️⃣ Initialize Terraform with backend
+      - name: Terraform Init
+        run: | 
+          terraform init \
+          -backend-config="bucket=dlittle-cloud-resume-terraform-state" \
+          -backend-config="key=$STATE_KEY" \
+          -backend-config="region=us-east-1" \
+          -backend-config="dynamodb_table=terraform-locks" \
+          -backend-config="encrypt=true"
 
-#       # 9️⃣ Terraform Plan
-#       - name: Terraform Plan
-#         run: terraform plan -out=tfplan
+      # 9️⃣ Terraform Plan
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
 
-#       # 🔟 Terraform Apply (main or develop)
-#       - name: Terraform Apply
-#         run: terraform apply -auto-approve tfplan
+      # 🔟 Terraform Apply (main or develop)
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
 
-#       # 1️⃣1️⃣ Wait for resources to stabilize
-#       - name: Wait for Resources
-#         run: sleep 10
+      # 1️⃣1️⃣ Wait for resources to stabilize
+      - name: Wait for Resources
+        run: sleep 10
 
-#       # 1️⃣2️⃣ Test the API
-#       - name: Test Resume API
-#         run: |
-#           API_URL=$(terraform output -raw api_url)
-#           echo "Testing $ENV environment at $API_URL"
-#           RESPONSE=$(curl -s -w "%{http_code}" -o response.json "$API_URL/101")
-#           HTTP_CODE=$(tail -n1 <<< "$RESPONSE")
-#           if [ "$HTTP_CODE" != "200" ]; then
-#             echo "API test failed with status $HTTP_CODE"
-#             cat response.json
-#             exit 1
-#           fi
-#           echo "API test passed!"
-#           cat response.json
+      # 1️⃣2️⃣ Test the API
+      - name: Test Resume API
+        run: |
+          API_URL=$(terraform output -raw api_url)
+          echo "Testing $ENV environment at $API_URL"
+          RESPONSE=$(curl -s -w "%{http_code}" -o response.json "$API_URL/101")
+          HTTP_CODE=$(tail -n1 <<< "$RESPONSE")
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "API test failed with status $HTTP_CODE"
+            cat response.json
+            exit 1
+          fi
+          echo "API test passed!"
+          cat response.json
