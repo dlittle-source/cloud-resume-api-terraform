@@ -1,9 +1,18 @@
+data "archive_file" "lambda_zip" {
+  type        = "zip"
+  source_dir  = "${path.module}/../lambda"
+  output_path = "${path.module}/../lambda/lambda.zip"
+}
+
+
 resource "aws_lambda_function" "resume_api" {
-  function_name = var.project_name
+  function_name = "resume-api"
   role          = aws_iam_role.lambda_role.arn
-  handler       = "app.handler"
-  runtime       = "python3.14"
-  filename      = "lambda.zip"
+  handler       = "app.app_lambda_handler"
+  runtime       = "python3.12"
+
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
   environment {
     variables = {
@@ -11,6 +20,7 @@ resource "aws_lambda_function" "resume_api" {
     }
   }
 }
+
 
 # create an IAM role for Lambda
 resource "aws_iam_role" "lambda_role" {
@@ -130,4 +140,35 @@ resource "aws_dynamodb_table_item" "resume_items" {
     skills = { S = each.value.skills }
   })
 }
+
+
+# Allow Lambda to write logs to CloudWatch
+resource "aws_iam_policy" "lambda_logging" {
+  name = "lambda-cloudwatch-logging"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# Attach logging policy to Lambda role
+resource "aws_iam_role_policy_attachment" "lambda_logging_attach" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = aws_iam_policy.lambda_logging.arn
+}
+
+
+
+
 
