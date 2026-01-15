@@ -1,4 +1,4 @@
-![Alt text](cloud_resume_api.png)
+![Alt text](cloud_resume_api_architecture.png)
 
 **Project: Serverless Resume API on AWS (Terraform + GitHub Actions)**
 
