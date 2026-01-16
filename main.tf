@@ -1,4 +1,4 @@
-resource "aws_lambda_function" "resume_api" { 
+resource "aws_lambda_function" "resume_api" {
   function_name = "resume-api"
   runtime       = "python3.12"
   handler       = "handler.handler"
