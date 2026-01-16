@@ -21,20 +21,16 @@ resource "aws_lambda_function" "resume_api" {
 }
 
 # IAM role for Lambda
-resource "aws_iam_role" "lambda_exec" {
-  name = "lambda-exec-role"
+resource "aws_iam_role" "lambda_role" {
+  name = "resume-api-lambda-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-      }
-    ]
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "lambda.amazonaws.com" }
+      Action    = "sts:AssumeRole"
+    }]
   })
 }
 
@@ -163,9 +159,9 @@ resource "aws_iam_policy" "lambda_logging" {
 }
 
 # Attach logging policy to Lambda role
-resource "aws_iam_role_policy_attachment" "lambda_logging_attach" {
-  role       = aws_iam_role.lambda_exec.name
-  policy_arn = aws_iam_policy.lambda_logging.arn
+resource "aws_iam_role_policy_attachment" "lambda_logging" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 
