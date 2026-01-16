@@ -5,3 +5,8 @@ variable "region" {
 variable "project_name" {
   default = "resume-api"
 }
+
+variable "environment" {
+  description = "Deployment environment (staging or production)"
+  type        = string
+}
