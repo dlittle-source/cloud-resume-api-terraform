@@ -1,11 +1,17 @@
+data "archive_file" "lambda_zip" {
+  type        = "zip"
+  source_dir = "${path.module}/lambda"
+  output_path = "${path.module}/lambda.zip"
+}
+
 resource "aws_lambda_function" "resume_api" {
   function_name = "resume-api"
   runtime       = "python3.12"
-  handler       = "app.handler"
-  role          = aws_iam_role.lambda_exec.arn
+  handler       = "app.lambda_handler"
+  role          = aws_iam_role.lambda_role.arn
 
-  filename         = "$(${path.module}/lambda.zip"
-  source_code_hash = fileexists("${path.module}/lambda.zip") ? filebase64sha256("${path.module}/lambda.zip") : null
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
   environment {
     variables = {
