@@ -1,6 +1,6 @@
 data "archive_file" "lambda_zip" {
   type        = "zip"
-  source_dir = "${path.module}/lambda"
+  source_dir  = "${path.module}/lambda"
   output_path = "${path.module}/lambda.zip"
 }
 
@@ -39,6 +39,25 @@ resource "aws_iam_role_policy_attachment" "lambda_exec_attach" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_iam_policy" "ddb_read" {
+  name        = "resume-api-ddb-read"
+  description = "Read access to DynamoDB table for Resume API"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "dynamodb:GetItem",
+        "dynamodb:Query",
+        "dynamodb:Scan"
+      ]
+      Resource = aws_dynamodb_table.resumes.arn
+    }]
+  })
+}
+
+# IAM Policy attach ddb
 resource "aws_iam_role_policy_attachment" "ddb_read" {
   role       = aws_iam_role.lambda_role.name
   policy_arn = aws_iam_policy.ddb_read.arn
