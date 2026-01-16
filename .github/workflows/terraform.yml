@@ -32,15 +32,6 @@ jobs:
       - name: Install zip
         run: sudo apt-get update && sudo apt-get install -y zip
 
-      - name: Debug repository structure
-        run: |
-          echo "Working directory:"
-          pwd
-          echo "Repo contents:"
-          ls -la
-          echo "Searching for lambda directories:"
-          find . -maxdepth 3 -type d | grep lambda || true
-
       # 4️⃣ Prepare Lambda zip
       - name: Package Lambda
         run: |
