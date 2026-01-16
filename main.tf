@@ -4,7 +4,7 @@ resource "aws_lambda_function" "resume_api" {
   handler       = "app.handler"
   role          = aws_iam_role.lambda_exec.arn
 
-  filename         = fileexists("${path.module}/lambda.zip") ? "${path.module}/lambda.zip" : null
+  filename         = "$(${path.module}/lambda.zip"
   source_code_hash = fileexists("${path.module}/lambda.zip") ? filebase64sha256("${path.module}/lambda.zip") : null
 
   environment {
@@ -14,31 +14,32 @@ resource "aws_lambda_function" "resume_api" {
   }
 }
 
-
-# create an IAM role for Lambda
-resource "aws_iam_role" "lambda_role" {
-  name = "resume-api-role-tf"
+# IAM role for Lambda
+resource "aws_iam_role" "lambda_exec" {
+  name = "lambda-exec-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = {
-        Service = "lambda.amazonaws.com"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
       }
-      Action = "sts:AssumeRole"
-    }]
+    ]
   })
 }
 
-# attach policies to the IAM role
-resource "aws_iam_role_policy_attachment" "lambda_basic" {
-  role       = aws_iam_role.lambda_role.name
+# Attach basic Lambda execution policy
+resource "aws_iam_role_policy_attachment" "lambda_exec_attach" {
+  role       = aws_iam_role.lambda_exec.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 resource "aws_iam_role_policy_attachment" "ddb_read" {
-  role       = aws_iam_role.lambda_role.name
+  role       = aws_iam_role.lambda_exec.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess"
 }
 
