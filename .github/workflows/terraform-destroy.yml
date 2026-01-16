@@ -4,35 +4,76 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "staging or production"
+        description: "Target environment to destroy (staging or production)"
         required: true
+
+env:
+  AWS_REGION: us-east-1
+  TF_VERSION: 1.5.9   # Lock Terraform version
 
 jobs:
   destroy:
+    name: Terraform Destroy Job
     runs-on: ubuntu-latest
-    env:
-      AWS_REGION: us-east-1
 
     steps:
-      - uses: actions/checkout@v3
+      # 1️⃣ Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - uses: hashicorp/setup-terraform@v2
+      # 2️⃣ Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
 
-      - uses: aws-actions/configure-aws-credentials@v2
+      # 3️⃣ Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
 
+      # 4️⃣ Validate environment input
+      - name: Validate Environment Input
+        run: |
+          if [[ "${{ github.event.inputs.environment }}" != "staging" && "${{ github.event.inputs.environment }}" != "production" ]]; then
+            echo "ERROR: Invalid environment '${{ github.event.inputs.environment }}'. Must be 'staging' or 'production'."
+            exit 1
+          fi
+
+      # 5️⃣ Select or create Terraform workspace
+      - name: Select/Create Terraform Workspace
+        run: |
+          terraform workspace select ${{ github.event.inputs.environment }} || terraform workspace new ${{ github.event.inputs.environment }}
+
+      # 6️⃣ Terraform Init with backend
       - name: Terraform Init
         run: |
           terraform init \
-          -backend-config="bucket=cloud-resume-terraform-state" \
-          -backend-config="key=${{ github.event.inputs.environment }}/terraform.tfstate" \
-          -backend-config="region=us-east-1" \
-          -backend-config="dynamodb_table=terraform-locks"
+            -backend-config="bucket=dlittle-cloud-resume-terraform-state" \
+            -backend-config="key=${{ github.event.inputs.environment }}/terraform.tfstate" \
+            -backend-config="region=${AWS_REGION}" \
+            -backend-config="dynamodb_table=terraform-locks" \
+            -backend-config="encrypt=true"
 
+      # 7️⃣ Terraform Validate & Plan Destroy
+      - name: Terraform Validate and Plan Destroy
+        run: |
+          terraform fmt -check
+          terraform validate
+          terraform plan -destroy -out=tfplan
+
+      # 8️⃣ Safety check: require manual approval for production
+      - name: Manual Approval for Production
+        if: ${{ github.event.inputs.environment == 'production' }}
+        run: |
+          echo "WARNING: You are about to destroy PRODUCTION resources!"
+          echo "Please confirm manually by approving this step in GitHub Actions UI."
+          exit 1
+
+      # 9️⃣ Terraform Destroy (auto-approve for non-production)
       - name: Terraform Destroy
-        run: terraform destroy -auto-approve
-
-
+        if: ${{ github.event.inputs.environment != 'production' }}
+        run: terraform apply -auto-approve tfplan

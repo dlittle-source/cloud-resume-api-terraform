@@ -24,7 +24,7 @@ resource "aws_lambda_function" "resume_api" {
 
 # create an IAM role for Lambda
 resource "aws_iam_role" "lambda_role" {
-  name = "${var.project_name}-role"
+  name = "resume-api-role-tf"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
