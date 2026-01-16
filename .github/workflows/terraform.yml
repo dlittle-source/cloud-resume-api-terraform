@@ -109,20 +109,29 @@ jobs:
       - name: Wait for resources
         run: sleep 15
 
-      # 1️⃣4️⃣ Test the API
       - name: Test Resume API
         run: |
           API_URL=$(terraform output -raw api_url)
           echo "Testing $ENV environment at $API_URL"
 
           for i in {1..5}; do
+            set +e  # disable immediate exit
             HTTP_CODE=$(curl -s -o response.json -w "%{http_code}" "$API_URL/101")
+            CURL_EXIT=$?
+            set -e  # re-enable exit-on-error
+
+            if [ "$CURL_EXIT" -ne 0 ]; then
+              echo "Curl failed (attempt $i/5), retrying in 5s..."
+              sleep 5
+              continue
+            fi
+
             if [ "$HTTP_CODE" == "200" ]; then
               echo "API test passed!"
               cat response.json
               exit 0
             else
-              echo "API not ready yet (attempt $i/5), retrying in 5s..."
+              echo "API returned $HTTP_CODE (attempt $i/5), retrying in 5s..."
               sleep 5
             fi
           done
