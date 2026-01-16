@@ -68,20 +68,20 @@ jobs:
             echo "STATE_KEY=feature/${GITHUB_REF##*/}/terraform.tfstate" >> $GITHUB_ENV
           fi
 
-      # 8️⃣ Select or create Terraform workspace
-      - name: Select/Create Terraform Workspace
-        run: |
-          terraform workspace select $ENV || terraform workspace new $ENV
-
-      # 9️⃣ Terraform Init with backend
+      # 8️⃣ Terraform Init with backend
       - name: Terraform Init
         run: |
           terraform init \
-            -backend-config="bucket=dlittle-cloud-resume-terraform-state" \
-            -backend-config="key=$STATE_KEY" \
-            -backend-config="region=${AWS_REGION}" \
-            -backend-config="dynamodb_table=terraform-locks" \
-            -backend-config="encrypt=true"
+          -backend-config="bucket=dlittle-cloud-resume-terraform-state" \
+          -backend-config="key=$STATE_KEY" \
+          -backend-config="region=${AWS_REGION}" \
+          -backend-config="dynamodb_table=terraform-locks" \
+          -backend-config="encrypt=true"
+
+      # 9️⃣ Select or create Terraform workspace
+      - name: Select/Create Terraform Workspace
+        run: |
+          terraform workspace select "$ENV" || terraform workspace new "$ENV"
 
       # 🔟 Terraform Validate & Plan
       - name: Terraform Validate and Plan
