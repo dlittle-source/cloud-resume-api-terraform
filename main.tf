@@ -1,7 +1,7 @@
 resource "aws_lambda_function" "resume_api" {
   function_name = "resume-api"
   runtime       = "python3.12"
-  handler       = "handler.handler"
+  handler       = "app.handler"
   role          = aws_iam_role.lambda_exec.arn
 
   filename         = fileexists("${path.module}/lambda.zip") ? "${path.module}/lambda.zip" : null
