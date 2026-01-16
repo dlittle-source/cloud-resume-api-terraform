@@ -43,12 +43,7 @@ jobs:
             exit 1
           fi
 
-      # 5️⃣ Select or create Terraform workspace
-      - name: Select/Create Terraform Workspace
-        run: |
-          terraform workspace select ${{ github.event.inputs.environment }} || terraform workspace new ${{ github.event.inputs.environment }}
-
-      # 6️⃣ Terraform Init with backend
+      # 5 Terraform Init with backend
       - name: Terraform Init
         run: |
           terraform init \
@@ -57,6 +52,11 @@ jobs:
             -backend-config="region=${AWS_REGION}" \
             -backend-config="dynamodb_table=terraform-locks" \
             -backend-config="encrypt=true"
+
+      # 6 Select or create Terraform workspace
+      - name: Select/Create Terraform Workspace
+        run: |
+          terraform workspace select ${{ github.event.inputs.environment }} || terraform workspace new ${{ github.event.inputs.environment }}
 
       # 7️⃣ Terraform Validate & Plan Destroy
       - name: Terraform Validate and Plan Destroy
